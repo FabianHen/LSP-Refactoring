@@ -6,18 +6,24 @@
    - [Golden Copy](#golden-copy)
    - [General Adjustments](#general-adjustments)
    - [Refactoring Patterns](#refactoring-patterns)
+      - [Strategy Pattern](#strategy-pattern)
+      - [Factory Pattern](#factory-pattern)
+   - [Implementation of the Desired Changes](#implementation-of-the-desired-changes)
 3. [Tennis](#tennis)
    - [Golden Copy](#golden-copy-1)
    - [General Adjustments](#general-adjustments-1)
    - [Refactoring Patterns](#refactoring-patterns-1)
+   - [Implementation of the Desired Changes](#implementation-of-the-desired-changes-)
 4. [Trip Service](#trip-service)
    - [Golden Copy](#golden-copy-2)
    - [General Adjustments](#general-adjustments-2)
    - [Refactoring Patterns](#refactoring-patterns-2)
+   - [Implementation of the Desired Changes](#implementation-of-the-desired-changes-1)
 5. [Expense Report](#expense-report)
    - [Golden Copy](#golden-copy-3)
    - [General Adjustments](#general-adjustments-3)
    - [Refactoring Patterns](#refactoring-patterns-3)
+   - [Implementation of the Desired Changes](#implementation-of-the-desired-changes)
 
 ## Golden Copy – General
 To ensure that the functionality of applications is preserved during refactoring, a "Golden Copy" should theoretically be created for each application. This Golden Copy serves as a reference point to ensure that all changes are correctly implemented and no unexpected errors are introduced.  
@@ -51,20 +57,41 @@ To improve code readability, a few general adjustments were made at the start of
 - Instead of checking with `!item.name.equals(FOO)` combined with nesting and handling in the else block, the logic was reversed to use `item.name.equals(FOO)`. This reduces nesting and improves code readability.
 
 ### Refactoring Patterns
-#### Strategy Pattern  
-#### Factory Pattern  
+#### Strategy Pattern
+Since the `updateQuality` method was very long and complex, I used the Strategy Pattern to encapsulate the different behaviors of the items. For each item, a separate class was created that implements the behavior of that specific item. This allowed the `updateQuality` method to be significantly simplified, as it now only needs to check which item it is and then call the corresponding strategy object.
+
+Instead of the usual approach of creating an interface for the strategies, I chose to use an abstract class. I did this because for all items, the `quality` must not be greater than `50` or less than `0`. I implemented this logic in the abstract class to avoid redundancy in the form of repeated checks like `item.quality < 50` or `item.quality > 0`.
+
+Although no changes are made for the `Sulfuras` item, I still created a dedicated strategy class for it. This ensures consistency and makes future extensions or modifications easier.
+
+#### Factory Pattern
+After implementing the Strategy Pattern, the `updateQuality` method was reduced to only 9 lines and is already very clear. However, since the name of the `GildedRose` class suggests broad functionality, I decided to implement the Factory Pattern. This moves the responsibility for creating the item strategies from the `GildedRose` class to a separate factory class. This improves adherence to the Single Responsibility Principle and makes the code even more maintainable.
+
+### Implementation of the Desired Changes
+Once the refactorings were completed, I implemented the requested changes. The extension involved adding a new item type called `Conjured`, which deteriorates twice as fast as normal items.
+
+During the implementation, I was uncertain because, as described, there are three possible interpretations:
+1. `Conjured` is an attribute of the `Item` class and would need to be considered in the existing strategy classes.
+2. `Conjured` is part of the item names (e.g., `Conjured Cheddar`). In this case, the factory class would need to check if the name starts with `Conjured`.
+3. `Conjured` is its own name and can simply be implemented as a separate strategy class and handled with a single line in the factory class.
+
+Since the third interpretation seemed the most sensible in the context of the refactoring, I chose this approach. A dedicated strategy class called `ConjuredItemStrategy` was created to implement the behavior of the `Conjured` items. In the factory class, an additional condition was added to account for this new strategy.
+
 
 ## Tennis
 ### Golden Copy
 ### General Adjustments
 ### Refactoring Patterns
+### Implementation of the Desired Changes
 
 ## Trip Service
 ### Golden Copy
 ### General Adjustments
 ### Refactoring Patterns
+### Implementation of the Desired Changes
 
 ## Expense Report
 ### Golden Copy
 ### General Adjustments
 ### Refactoring Patterns
+### Implementation of the Desired Changes
