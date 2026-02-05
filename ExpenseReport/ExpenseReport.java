@@ -1,15 +1,26 @@
 package expensereport;
 
 import expensereport.line.*;
+import expensereport.printer.*;
 
 import java.util.Date;
 import java.util.List;
 
 public class ExpenseReport {
+    private Printer printer;
+
+    public ExpenseReport() {
+        printer = new ConsolePinter();
+    }
+
+    public ExpenseReport(Printer printer) {
+        this.printer = printer;
+    }
 
     public void printReport(List<Expense> expenses) {
         int total = 0;
         int mealExpenses = 0;
+
 
         HeadLine headLine = new HeadLine(new Date());
         System.out.println(headLine.format());
@@ -23,15 +34,19 @@ public class ExpenseReport {
                     expense.amount,
                     expense.getMealOverExpenseMarker()
             );
-            System.out.println(currentLine.format());
+            printer.printLine(currentLine);
 
             total += expense.amount;
         }
 
         MealExpensesLine mealExpensesLine = new MealExpensesLine(mealExpenses);
-        System.out.println(mealExpensesLine.format());
+        printer.printLine(mealExpensesLine);
 
         TotalExpensesLine totalExpensesLine = new TotalExpensesLine(total);
-        System.out.println(totalExpensesLine.format());
+        printer.printLine(totalExpensesLine);
+    }
+
+    public void setPrinter(Printer printer) {
+        this.printer = printer;
     }
 }
