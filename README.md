@@ -25,6 +25,7 @@
    - [Golden Copy](#golden-copy-3)
    - [General Adjustments](#general-adjustments-3)
    - [Refactoring Patterns](#refactoring-patterns-2)
+      - [Strategy Pattern](#strategy-pattern-1)
    - [Implementation of the Desired Changes](#implementation-of-the-desired-changes)
 
 ## Golden Copy – General
@@ -183,6 +184,49 @@ After ensuring the testability of the `TripService` class, I was able to start i
 
 ## Expense Report
 ### Golden Copy
+Since the method does not return any value and only writes to the console, the observable behavior consists solely of the text output. Therefore, in tests, the console output must be captured and compared with the expected output. To create a complete Golden Copy, the tests must ensure the following:
+
+- The report always starts with the header `Expenses <Date>`.  
+- Each output line is correct:  
+   - correct name depending on the `ExpenseType`  
+   - correct amount  
+   - correctly set marker (`X` or blank)  
+- The totals at the end of the report are correct:  
+   - total expenses for meals  
+   - total of all expenses  
+
+One thing to note when creating the tests is the header line. Since it contains the current date and is therefore not deterministic or reproducible, only the presence of the word "Expenses" followed by some content should be checked. All other lines can be compared directly with the expected strings.
+
 ### General Adjustments
+To improve code readability here as well, I made a few general adjustments at the beginning of the refactoring:
+
+- I extracted the creation of the `mealOverExpensesMarker` into a separate method `getMealOverExpensesMarker(...)` to improve readability. Later, this method was moved to the `Expense` class, as it belongs to the responsibility of that class.  
+- Since both the expense limit and the `expenseName` depend on the enum, I moved them directly into the enum. This improves readability and reduces the occurrence of "magic numbers" and strings.  
+- I added a boolean field `isMealExpense` to the enum to avoid ever-growing if statements.  
+- I moved the `ExpenseType` enum and the `Expense` class into separate files to improve clarity.  
+- I encapsulated the data fields of the report lines into a `ReportLine` DTO (Data Transfer Object) to represent a single line of the report. This improves the readability of the `printReport(...)` method. The string generation can also be handled in this class, following the Single-Responsibility Principle.
+
+Another change I considered was converting the `Expense` class into a `Record`, since it only holds data. However, this would have affected its use in tests or other files, so I did not make this change.
+
+[View Changes](https://github.com/FabianHen/Refactoring-Exercise/commit/121ddd3178a42d6126549e484bb5415788163890)
+
 ### Refactoring Patterns
+#### Strategy Pattern
+After the general adjustments, the `ExpenseReport` class was already much clearer. However, there was still one messy part in the `printReport(...)` method: the direct `System.out.println(...)` calls. To further extract this, I decided to implement the Strategy Pattern in the form of `Printer` classes.
+
+While writing the interface, I realized that, similar to the `ReportLine`, I could move each line type into its own class, leaving only the `printLine(Line line)` method to implement. An alternative would have been to create a separate method in the interface for each line type, but this would have bloated the interface and made implementing the classes harder. Therefore, I chose the first approach. Of course, one could argue this is over-engineering, but since this is a refactoring exercise, I wanted to use the opportunity to demonstrate the Strategy Pattern in combination with polymorphism.
+
+[View Changes](https://github.com/FabianHen/Refactoring-Exercise/commit/7bc70fac3c2ee71bb96844bd7be59ee2d900af63)
+
+After implementing this change, I continued with the Strategy Pattern. I created the `Printer` interface and moved the current default behavior of the `System.out.println(...)` calls into the `ConsolePrinter` class. The `ExpenseReport` class now has a `Printer` object as an attribute, which is used in the `printReport(...)` method. This object is set by default to an instance of `ConsolePrinter` so that the class behavior does not change. However, it can be adjusted via a constructor or setter. This functionality makes testing the `ExpenseReport` class much easier, as a mock printer can now be passed to verify the output instead of capturing console output. I implemented such an example printer in the `TestPrinter` class, where the printed lines are simply stored in a list.
+
+[View Changes](https://github.com/FabianHen/Refactoring-Exercise/commit/82533ef648a787d48e95e66d529ff3546094a16a)
+
 ### Implementation of the Desired Changes
+Once the refactoring was complete, I could implement the requested changes. The requirement was as follows:
+
+*"Add 'Lunch' with an expense limit of 2000."*
+
+Thanks to my previous changes, implementing this was straightforward. I only needed to add a new entry in the `ExpenseType` enum to represent the new expense type. Since the enum already contains the information about the name and limit, no other changes in the code were necessary to support the new category.
+
+[View Changes](https://github.com/FabianHen/Refactoring-Exercise/commit/aabe4e53e415ce2567368c2ace26)
