@@ -3,7 +3,8 @@ package expensereport;
 public enum ExpenseType {
     DINNER("Dinner", 5000, true),
     BREAKFAST("Breakfast", 1000, true),
-    CAR_RENTAL("Car Rental", 0, false);
+    CAR_RENTAL("Car Rental", 0, false),
+    LUNCH("Lunch", 2000, true);
 
     private final String expenseName;
     private final int expenseLimit;
